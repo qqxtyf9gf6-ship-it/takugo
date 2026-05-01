@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>たく語変換Bot</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&family=DotGothic16&display=swap');
+
+  :root {
+    --bg: #1a1a2e;
+    --surface: #16213e;
+    --card: #0f3460;
+    --accent: #e94560;
+    --accent2: #f5a623;
+    --text: #eaeaea;
+    --muted: #8892b0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Zen Maru Gothic', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    background-image: 
+      radial-gradient(ellipse at 20% 20%, rgba(233,69,96,0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(245,166,35,0.1) 0%, transparent 50%);
+  }
+
+  .container {
+    width: 100%;
+    max-width: 640px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .title {
+    font-size: 3rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+  }
+
+  .subtitle {
+    font-family: 'DotGothic16', monospace;
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    letter-spacing: 0.1em;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px;
+    padding: 1.8rem;
+    margin-bottom: 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  label {
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+    font-family: 'DotGothic16', monospace;
+  }
+
+  textarea {
+    width: 100%;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 1.1rem;
+    line-height: 1.7;
+    padding: 1rem;
+    resize: vertical;
+    min-height: 100px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  textarea:focus {
+    border-color: var(--accent);
+  }
+
+  textarea::placeholder {
+    color: var(--muted);
+    opacity: 0.5;
+  }
+
+  .btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent), #c73652);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 0.9rem;
+    margin-top: 1rem;
+    transition: transform 0.15s, opacity 0.15s;
+    letter-spacing: 0.05em;
+  }
+
+  .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+
+  .output-card {
+    background: var(--card);
+    border: 1px solid rgba(233,69,96,0.3);
+    border-radius: 16px;
+    padding: 1.8rem;
+    margin-top: 1rem;
+    position: relative;
+    overflow: hidden;
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .output-card.show { display: block; }
+
+  .output-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+  }
+
+  .output-text {
+    font-size: 1.3rem;
+    line-height: 1.8;
+    font-weight: 700;
+    color: var(--accent2);
+    word-break: break-all;
+  }
+
+  .copy-btn {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'DotGothic16', monospace;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.8rem;
+    margin-top: 1rem;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.3); }
+
+  .rules {
+    margin-top: 2rem;
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+  }
+
+  .rules summary {
+    cursor: pointer;
+    font-family: 'DotGothic16', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    user-select: none;
+  }
+
+  .rules-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem 1.5rem;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-family: 'DotGothic16', monospace;
+  }
+
+  .rule-item span { color: var(--accent2); }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="title">たく語変換Bot</div>
+    <div class="subtitle">▶ TAKU-GO CONVERTER v2.0</div>
+  </header>
+
+  <div class="card">
+    <label>▌ 日本語を入力</label>
+    <textarea id="input" placeholder="ここに文章を入力してください…"></textarea>
+    <button class="btn" onclick="convert()">🔄 たく語に変換する</button>
+  </div>
+
+  <div class="output-card" id="output-card">
+    <label>▌ たく語</label>
+    <div class="output-text" id="output"></div>
+    <button class="copy-btn" onclick="copyText()">📋 コピー</button>
+  </div>
+
+  <details class="rules">
+    <summary>▌ 変換ルール一覧</summary>
+    <div class="rules-grid">
+      <div class="rule-item">た行 → <span>か行</span></div>
+      <div class="rule-item">さ行 → <span>か行</span></div>
+      <div class="rule-item">だ行 → <span>が行</span></div>
+      <div class="rule-item">な行 → <span>が行</span></div>
+      <div class="rule-item">ら行 → <span>が行</span></div>
+      <div class="rule-item">ま行 → <span>まぎむげご</span></div>
+      <div class="rule-item">や行 → <span>やぐお</span></div>
+      <div class="rule-item">わをん → <span>わごん</span></div>
+      <div class="rule-item">ば行 → <span>ばぎぐげお</span></div>
+      <div class="rule-item">く → <span>ぐ</span></div>
+      <div class="rule-item">助詞「は」→ <span>わ</span></div>
+      <div class="rule-item">か・が行・母音・促音 → <span>そのまま</span></div>
+    </div>
+  </details>
+</div>
+
+<script>
+// 変換マップ（完全版）
+const taMap = {
+  // た行 → か行
+  'た':'か','ち':'き','つ':'く','て':'け','と':'こ',
+  // だ行 → が行
+  'だ':'が','ぢ':'ぎ','づ':'ぐ','で':'げ','ど':'ご',
+  // さ行 → か行
+  'さ':'か','し':'き','す':'く','せ':'け','そ':'こ',
+  // な行 → が行
+  'な':'が','に':'ぎ','ぬ':'ぐ','ね':'げ','の':'ご',
+  // ら行 → が行
+  'ら':'が','り':'ぎ','る':'ぐ','れ':'げ','ろ':'ご',
+  // ま行 → まぎむげご
+  'ま':'ま','み':'ぎ','む':'む','め':'げ','も':'ご',
+  // や行 → やぐお
+  'や':'や','ゆ':'ぐ','よ':'お',
+  // わをん → わごん
+  'わ':'わ','を':'ご','ん':'ん',
+  // ば行 → ばぎぐげお
+  'ば':'ば','び':'ぎ','ぶ':'ぐ','べ':'げ','ぼ':'お',
+  // く → ぐ（か行はそれ以外そのまま）
+  'く':'ぐ',
+};
+
+// 漢字→よみ変換テーブル（サンプルデータから抽出した頻出語）
+const kanjiMap = {
+  '野':'や','球':'きゅう','面':'おも','白':'しろ','首':'くび',
+  '痛':'いた','救':'きゅう','急':'きゅう','車':'しゃ','都':'つ',
+  '合':'ごう','良':'よ','僕':'ぼく','名':'な','前':'まえ',
+  '半':'はん','分':'ぶん',
+};
+
+// 助詞「は」判定
+function isParticleHa(str, i) {
+  if (str[i] !== 'は') return false;
+  if (i === 0) return false;
+  const prev = str[i-1];
+  if (/[、。！？\s]/.test(prev)) return false;
+  return true;
+}
+
+function convertToTakugo(text) {
+  // 漢字を展開
+  let expanded = '';
+  for (const ch of text) {
+    expanded += kanjiMap[ch] ?? ch;
+  }
+
+  let result = '';
+  for (let i = 0; i < expanded.length; i++) {
+    const ch = expanded[i];
+
+    // 助詞「は」→「わ」
+    if (ch === 'は' && isParticleHa(expanded, i)) {
+      result += 'わ';
+      continue;
+    }
+    // マップにある文字
+    if (taMap[ch]) {
+      result += taMap[ch];
+      continue;
+    }
+    result += ch;
+  }
+  return result;
+}
+
+function convert() {
+  const input = document.getElementById('input').value.trim();
+  if (!input) return;
+  const output = convertToTakugo(input);
+  document.getElementById('output').textContent = output;
+  document.getElementById('output-card').classList.add('show');
+}
+
+function copyText() {
+  const text = document.getElementById('output').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✅ コピーしました';
+    setTimeout(() => btn.textContent = '📋 コピー', 1500);
+  });
+}
+
+// Enterキーでも変換
+document.getElementById('input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.ctrlKey) convert();
+});
+</script>
+</body>
+</html>
