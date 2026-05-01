@@ -35,16 +35,12 @@
   }
 
   .container { width: 100%; max-width: 640px; }
-
   header { text-align: center; margin-bottom: 2.5rem; }
 
   .title {
     font-size: 3rem;
     font-weight: 900;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: unset;
-    background-clip: text;
+    color: var(--accent);
     line-height: 1.1;
   }
 
@@ -201,7 +197,7 @@
 <div class="container">
   <header>
     <div class="title">たく語変換Bot</div>
-    <div class="subtitle">▶ TAKU-GO CONVERTER v2.0</div>
+    <div class="subtitle">▶ TAKU-GO CONVERTER v2.1</div>
   </header>
 
   <div class="notice">
@@ -234,7 +230,7 @@
       <div class="rule-item">ば行 → <span>ばぎぐげお</span></div>
       <div class="rule-item">く → <span>ぐ</span></div>
       <div class="rule-item">助詞「は」→ <span>わ</span></div>
-      <div class="rule-item">か・が行・母音・促音 → <span>そのまま</span></div>
+      <div class="rule-item">ぼく → <span>ぼぎ（特例）</span></div>
     </div>
   </details>
 </div>
@@ -253,6 +249,10 @@ const taMap = {
   'く':'ぐ',
 };
 
+function applySpecialRules(text) {
+  return text.replace(/ぼく/g, 'ぼぎ');
+}
+
 function isParticleHa(str, i) {
   if (str[i] !== 'は') return false;
   if (i === 0) return false;
@@ -260,6 +260,7 @@ function isParticleHa(str, i) {
 }
 
 function convertToTakugo(text) {
+  text = applySpecialRules(text);
   let result = '';
   for (let i = 0; i < text.length; i++) {
     const ch = text[i];
